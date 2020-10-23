@@ -11,11 +11,17 @@ npm install react-native-rodney-broadcast
 ## Usage
 
 ```js
-import RodneyBroadcast from "react-native-rodney-broadcast";
+import React, { useEffect, useState } from 'react';
+import { DeviceEventEmitter } from 'react-native';
+import RodneyBroadcast from 'react-native-rodney-broadcast';
 
 // ...
+const [result, setResult] = useState()
+const result = await RodneyBroadcast.register('NAME OF INTENTE FILTER','NAME OF PUT EXTRA','NAME OF SERVICE');
 
-const result = await RodneyBroadcast.multiply(3, 7);
+ DeviceEventEmitter.addListener('NAME OF SERVICE', function (map) {
+      setResult(map.data)
+ });
 ```
 
 ## Contributing

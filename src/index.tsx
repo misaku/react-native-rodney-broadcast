@@ -1,7 +1,11 @@
 import { NativeModules } from 'react-native';
 
 type RodneyBroadcastType = {
-  multiply(a: number, b: number): Promise<number>;
+  register(
+    filterName: string,
+    actionName: string,
+    eventName: string
+  ): Promise<boolean>;
 };
 
 const { RodneyBroadcast } = NativeModules;

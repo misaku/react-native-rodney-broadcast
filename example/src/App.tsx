@@ -1,17 +1,29 @@
-import * as React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Text, DeviceEventEmitter } from 'react-native';
 import RodneyBroadcast from 'react-native-rodney-broadcast';
 
 export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
+  const [resultStatus, setResultStatus] = useState('Aguardando Leitura');
+  useEffect(() => {
+    RodneyBroadcast.register(
+      'app.dsic.barcodetray.BARCODE_BR_DECODING_DATA',
+      'EXTRA_BARCODE_DECODED_DATA',
+      'RODNEY'
+    );
 
-  React.useEffect(() => {
-    RodneyBroadcast.multiply(3, 7).then(setResult);
+    DeviceEventEmitter.addListener('RODNEY', function (map) {
+      setResultStatus(map.data);
+    });
+
+    return () => {
+      // @ts-ignore
+      DeviceEventEmitter.removeListener('RODNEY');
+    };
   }, []);
 
   return (
     <View style={styles.container}>
-      <Text>Result: {result}</Text>
+      <Text>{resultStatus}</Text>
     </View>
   );
 }
