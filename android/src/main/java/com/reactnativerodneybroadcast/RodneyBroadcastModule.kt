@@ -10,7 +10,7 @@ import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
 
 class RodneyBroadcastModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
-
+  private var reciverList: ArrayList<BroadcastReceiver> = ArrayList()
   override fun getName(): String {
     return "RodneyBroadcast"
   }
@@ -19,6 +19,16 @@ class RodneyBroadcastModule(reactContext: ReactApplicationContext) : ReactContex
     val map: WritableMap = WritableNativeMap()
     map.putString("data", initiatingIntent.getStringExtra(actionName))
     this.sendEvent(eventName, map)
+  }
+
+  @ReactMethod
+  fun unregister(idx: Int, promise: Promise) {
+    if(this.reciverList.size>0) {
+      val reciver = this.reciverList.get(idx)
+      this.reactApplicationContext.unregisterReceiver(reciver)
+      this.reciverList.remove(reciver)
+    }
+    promise.resolve(true)
   }
 
   // Example method
@@ -44,7 +54,9 @@ class RodneyBroadcastModule(reactContext: ReactApplicationContext) : ReactContex
     }
     this.reactApplicationContext.registerReceiver(myBroadcastReceiver, filter)
 
-    promise.resolve(true)
+    this.reciverList.add(myBroadcastReceiver)
+
+    promise.resolve(this.reciverList.indexOf(myBroadcastReceiver))
 
   }
 
