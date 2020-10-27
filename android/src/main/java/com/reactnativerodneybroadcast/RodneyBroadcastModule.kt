@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Handler
 import android.util.Log
 import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
@@ -15,12 +14,29 @@ class RodneyBroadcastModule(reactContext: ReactApplicationContext) : ReactContex
     return "RodneyBroadcast"
   }
 
-  private fun displayScanResult(initiatingIntent: Intent, actionName: String, eventName: String) {
+  /**
+   * Method used to prepare and get data to send
+   * @param initiatingIntent Intent
+   * @param actionNames List<String> of names to use for get data
+   * @param eventName String name of event
+   *
+   * @returns Void
+   */
+  private fun displayScanResult(initiatingIntent: Intent, actionNames: List<String>, eventName: String) {
     val map: WritableMap = WritableNativeMap()
-    map.putString("data", initiatingIntent.getStringExtra(actionName))
+    for (actionName in actionNames){
+      map.putString(actionName, initiatingIntent.getStringExtra(actionName))
+    }
     this.sendEvent(eventName, map)
   }
 
+  /**
+   * Method used to register broadcast reciver
+   * @param filterName Sring name used to filter
+   * @param actionNames Sring names used to map
+   *
+   * @returns Promise<bolean>
+   */
   @ReactMethod
   fun unregister(idx: Int, promise: Promise) {
     if(this.reciverList.size>0) {
@@ -31,10 +47,16 @@ class RodneyBroadcastModule(reactContext: ReactApplicationContext) : ReactContex
     promise.resolve(true)
   }
 
-  // Example method
-  // See https://facebook.github.io/react-native/docs/native-modules-android
+  /**
+   * Method used to register broadcast reciver
+   * @param filterName Sring name used to filter
+   * @param actionNames Sring names used to map
+   *
+   * @returns Promise<Int> index of reciver
+   */
   @ReactMethod
-  fun register(filterName: String, actionName: String, eventName: String, promise: Promise) {
+  fun register(filterName: String, actionNames: String, eventName: String, promise: Promise) {
+
     val filter = IntentFilter()
     filter.addAction(filterName)
 
@@ -44,7 +66,7 @@ class RodneyBroadcastModule(reactContext: ReactApplicationContext) : ReactContex
 
         if (action == filterName) {
           try {
-            displayScanResult(intent, actionName, eventName)
+            displayScanResult(intent, actionNames.split(";"), eventName)
           } catch (e: Exception) {
             Log.d("ReactNativeJS", "Exception in displayScanResult in BroadcastReceiver is:$e")
           }
@@ -52,6 +74,7 @@ class RodneyBroadcastModule(reactContext: ReactApplicationContext) : ReactContex
         }
       }
     }
+
     this.reactApplicationContext.registerReceiver(myBroadcastReceiver, filter)
 
     this.reciverList.add(myBroadcastReceiver)
@@ -60,6 +83,13 @@ class RodneyBroadcastModule(reactContext: ReactApplicationContext) : ReactContex
 
   }
 
+  /**
+   * Send event to device event emitter
+   * @param eventName Sring of event name
+   * @param map WritableMap to send
+   *
+   * @returns Void
+   */
   private fun sendEvent(eventName: String, map: WritableMap) {
 
     try {

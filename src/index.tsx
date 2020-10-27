@@ -10,7 +10,7 @@ import React, {
 type RodneyBroadcastType = {
   register(
     filterName: string,
-    actionName: string,
+    actionNames: string[],
     eventName: string
   ): Promise<number>;
   unregister(index: number): Promise<boolean>;
@@ -19,7 +19,7 @@ type RodneyBroadcastType = {
 const { RodneyBroadcast } = NativeModules;
 
 interface RodneyBroadcastContextData {
-  data: object;
+  data: any;
   clear(): void;
 }
 
@@ -29,14 +29,22 @@ const RodneyBroadcastContext = createContext<RodneyBroadcastContextData>(
 
 interface RodneyInterface {
   filterName: string;
-  actionName: string;
+  actionNames: string[];
   eventName: string;
 }
 
+/**
+ * This provider start new reciver and list event
+ * @param filterName Sring name used to filter
+ * @param actionNames Sring[] names used to map data
+ * @param eventName Sring names create event
+ *
+ * @returns Promise<number>
+ */
 export const RodneyBroadcastProvider: React.FC<RodneyInterface> = ({
   children,
   filterName,
-  actionName,
+  actionNames,
   eventName,
 }) => {
   const [data, setData] = useState<any>('' as any);
@@ -46,14 +54,14 @@ export const RodneyBroadcastProvider: React.FC<RodneyInterface> = ({
       const register = async () => {
         const idxRegister = await RodneyBroadcast.register(
           filterName,
-          actionName,
+          actionNames.join(';'),
           eventName
         );
         setReciverId(idxRegister);
       };
       register();
       DeviceEventEmitter.addListener('RODNEY', function (map) {
-        setData(map.data);
+        setData(map);
       });
     }
     return () => {
@@ -64,7 +72,7 @@ export const RodneyBroadcastProvider: React.FC<RodneyInterface> = ({
       // @ts-ignore
       DeviceEventEmitter.removeListener('RODNEY');
     };
-  }, [reciverId, filterName, actionName, eventName]);
+  }, [reciverId, filterName, actionNames, eventName]);
 
   const clear = useCallback(async () => {
     setData('');
@@ -77,6 +85,10 @@ export const RodneyBroadcastProvider: React.FC<RodneyInterface> = ({
   );
 };
 
+/**
+ * This hooks return data and clear
+ * @returns {data: any, clear:()=>void}
+ */
 export function useRodneyBroadcast(): RodneyBroadcastContextData {
   const context = useContext(RodneyBroadcastContext);
   if (!context) {

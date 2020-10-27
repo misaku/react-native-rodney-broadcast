@@ -9,7 +9,7 @@ function Home() {
   const { data, clear } = useRodneyBroadcast();
   return (
     <View style={styles.container}>
-      <Text>{data || 'Aguardando Leitura'}</Text>
+      <Text>{data?.EXTRA_BARCODE_DECODED_DATA || 'Aguardando Leitura'}</Text>
       <TouchableOpacity onPress={clear}>
         <Text>CLear Data</Text>
       </TouchableOpacity>
@@ -20,7 +20,7 @@ function Home() {
 export default function App() {
   return (
     <RodneyBroadcastProvider
-      actionName={'EXTRA_BARCODE_DECODED_DATA'}
+      actionNames={['EXTRA_BARCODE_DECODED_DATA']}
       eventName={'RODNEY'}
       filterName={'app.dsic.barcodetray.BARCODE_BR_DECODING_DATA'}
     >
