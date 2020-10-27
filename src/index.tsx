@@ -47,7 +47,7 @@ export const RodneyBroadcastProvider: React.FC<RodneyInterface> = ({
   actionNames,
   eventName,
 }) => {
-  const [data, setData] = useState<any>('' as any);
+  const [data, setData] = useState<any>(null as any);
   const [reciverId, setReciverId] = useState<number | undefined>(undefined);
   useEffect(() => {
     if (reciverId === undefined) {
@@ -60,7 +60,7 @@ export const RodneyBroadcastProvider: React.FC<RodneyInterface> = ({
         setReciverId(idxRegister);
       };
       register();
-      DeviceEventEmitter.addListener('RODNEY', function (map) {
+      DeviceEventEmitter.addListener(eventName, function (map) {
         setData(map);
       });
     }
@@ -70,12 +70,12 @@ export const RodneyBroadcastProvider: React.FC<RodneyInterface> = ({
         setReciverId(undefined);
       }
       // @ts-ignore
-      DeviceEventEmitter.removeListener('RODNEY');
+      DeviceEventEmitter.removeListener(eventName);
     };
   }, [reciverId, filterName, actionNames, eventName]);
 
   const clear = useCallback(async () => {
-    setData('');
+    setData(null);
   }, []);
 
   return (
