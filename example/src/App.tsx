@@ -1,9 +1,11 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import {
+import { createServiceRodneyBroadcast } from 'react-native-rodney-broadcast';
+
+const [
   RodneyBroadcastProvider,
   useRodneyBroadcast,
-} from 'react-native-rodney-broadcast';
+] = createServiceRodneyBroadcast();
 
 function Home() {
   const { data, clear } = useRodneyBroadcast();
