@@ -23,16 +23,11 @@ interface RodneyBroadcastContextData {
   clear(): void;
 }
 
-interface RodneyInterface {
-  filterName: string;
-  actionNames: string[];
-  eventName: string;
-}
-
-export function createServiceRodneyBroadcast(): [
-  React.FC<RodneyInterface>,
-  () => RodneyBroadcastContextData
-] {
+export function createServiceRodneyBroadcast(
+  filterName: string,
+  actionNames: string[],
+  eventName: string
+): [React.FC, () => RodneyBroadcastContextData] {
   const RodneyBroadcastContext = createContext<RodneyBroadcastContextData>(
     {} as RodneyBroadcastContextData
   );
@@ -44,12 +39,7 @@ export function createServiceRodneyBroadcast(): [
    *
    * @returns Promise<number>
    */
-  const RodneyBroadcastProvider: React.FC<RodneyInterface> = ({
-    children,
-    filterName,
-    actionNames,
-    eventName,
-  }) => {
+  const RodneyBroadcastProvider: React.FC = ({ children }) => {
     const [data, setData] = useState<any>(null as any);
     const [reciverId, setReciverId] = useState<number | undefined>(undefined);
     useEffect(() => {
@@ -75,7 +65,7 @@ export function createServiceRodneyBroadcast(): [
         // @ts-ignore
         DeviceEventEmitter.removeListener(eventName);
       };
-    }, [reciverId, filterName, actionNames, eventName]);
+    }, [reciverId]);
 
     const clear = useCallback(async () => {
       setData(null);
