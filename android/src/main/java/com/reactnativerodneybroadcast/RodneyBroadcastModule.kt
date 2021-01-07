@@ -8,7 +8,9 @@ import android.util.Log
 import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
 
-class RodneyBroadcastModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
+
+class RodneyBroadcastModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext){
+
   private var reciverList: ArrayList<BroadcastReceiver> = ArrayList()
   override fun getName(): String {
     return "RodneyBroadcast"
@@ -51,6 +53,7 @@ class RodneyBroadcastModule(reactContext: ReactApplicationContext) : ReactContex
    * Method used to register broadcast reciver
    * @param filterName Sring name used to filter
    * @param actionNames Sring names used to map
+   * @param eventName Sring names used to evente emitter
    *
    * @returns Promise<Int> index of reciver
    */
@@ -68,7 +71,7 @@ class RodneyBroadcastModule(reactContext: ReactApplicationContext) : ReactContex
           try {
             displayScanResult(intent, actionNames.split(";"), eventName)
           } catch (e: Exception) {
-            Log.d("ReactNativeJS", "Exception in displayScanResult in BroadcastReceiver is:$e")
+            Log.d("RNRodneyBroadcast", "Exception in displayScanResult in BroadcastReceiver is:$e")
           }
 
         }
@@ -84,6 +87,21 @@ class RodneyBroadcastModule(reactContext: ReactApplicationContext) : ReactContex
   }
 
   /**
+   * Method used to simulate event
+   * @param eventName Sring name used event emitter
+   * @param actionName Sring names used to map
+   * @param value Sring names used to map
+   *
+   * @returns Promise<Int> index of reciver
+   */
+  @ReactMethod
+  fun simulateEvent(eventName: String, actionName: String, value: String, promise: Promise){
+    val map: WritableMap = WritableNativeMap()
+    map.putString(actionName, value)
+    this.sendEvent(eventName, map)
+  }
+
+  /**
    * Send event to device event emitter
    * @param eventName Sring of event name
    * @param map WritableMap to send
@@ -96,7 +114,7 @@ class RodneyBroadcastModule(reactContext: ReactApplicationContext) : ReactContex
       this.reactApplicationContext.getJSModule(RCTDeviceEventEmitter::class.java)
         .emit(eventName, map)
     } catch (e: Exception) {
-      Log.d("ReactNativeJS", "Exception in sendEvent in BroadcastReceiver is:$e")
+      Log.d("RNRodneyBroadcast", "Exception in sendEvent in BroadcastReceiver is:$e")
     }
   }
 

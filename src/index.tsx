@@ -14,6 +14,11 @@ type RodneyBroadcastType = {
     eventName: string
   ): Promise<number>;
   unregister(index: number): Promise<boolean>;
+  simulateEvent(
+    eventName: String,
+    actionName: String,
+    value: String
+  ): Promise<void>;
 };
 
 const { RodneyBroadcast } = NativeModules;
