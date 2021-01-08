@@ -47,16 +47,16 @@ export function createServiceRodneyBroadcast(
   const RodneyBroadcastProvider: React.FC = ({ children }) => {
     const [data, setData] = useState<any>(null as any);
     const [reciverId, setReciverId] = useState<number | undefined>(undefined);
+    const register = useCallback(async () => {
+      const idxRegister = await RodneyBroadcast.register(
+        filterName,
+        actionNames.join(';'),
+        eventName
+      );
+      setReciverId(idxRegister);
+    }, []);
     useEffect(() => {
       if (reciverId === undefined) {
-        const register = async () => {
-          const idxRegister = await RodneyBroadcast.register(
-            filterName,
-            actionNames.join(';'),
-            eventName
-          );
-          setReciverId(idxRegister);
-        };
         register();
         DeviceEventEmitter.addListener(eventName, function (map) {
           setData(map);
@@ -70,7 +70,7 @@ export function createServiceRodneyBroadcast(
         // @ts-ignore
         DeviceEventEmitter.removeListener(eventName);
       };
-    }, [reciverId]);
+    }, [reciverId, register]);
 
     const clear = useCallback(async () => {
       setData(null);
