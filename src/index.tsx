@@ -48,29 +48,33 @@ export function createServiceRodneyBroadcast(
     const [data, setData] = useState<any>(null as any);
     const [reciverId, setReciverId] = useState<number | undefined>(undefined);
     const register = useCallback(async () => {
-      const idxRegister = await RodneyBroadcast.register(
-        filterName,
-        actionNames.join(';'),
-        eventName
-      );
-      setReciverId(idxRegister);
-    }, []);
-    useEffect(() => {
       if (reciverId === undefined) {
-        register();
+        const idxRegister = await RodneyBroadcast.register(
+          filterName,
+          actionNames.join(';'),
+          eventName
+        );
+        setReciverId(idxRegister);
         DeviceEventEmitter.addListener(eventName, function (map) {
           setData(map);
         });
       }
+    }, [reciverId]);
+    const unregister = useCallback(async () => {
+      if (reciverId !== undefined) {
+        await RodneyBroadcast.unregister(reciverId);
+        setReciverId(undefined);
+        DeviceEventEmitter.removeListener(eventName, function () {
+          console.log('Remove event');
+        });
+      }
+    }, [reciverId]);
+    useEffect(() => {
+      register();
       return () => {
-        if (reciverId !== undefined) {
-          RodneyBroadcast.unregister(reciverId);
-          setReciverId(undefined);
-        }
-        // @ts-ignore
-        DeviceEventEmitter.removeListener(eventName);
+        unregister();
       };
-    }, [reciverId, register]);
+    }, [register, unregister]);
 
     const clear = useCallback(async () => {
       setData(null);
