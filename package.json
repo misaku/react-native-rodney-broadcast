@@ -1,6 +1,6 @@
 {
   "name": "react-native-rodney-broadcast",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "module config broadcast receiver",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
