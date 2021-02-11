@@ -88,17 +88,20 @@ class RodneyBroadcastModule(reactContext: ReactApplicationContext) : ReactContex
 
   /**
    * Method used to simulate event
-   * @param eventName Sring name used event emitter
-   * @param actionName Sring names used to map
+   * @param actionName Sring name of broadcast intent
+   * @param putExtra Sring names used to map
    * @param value Sring names used to map
    *
    * @returns Promise<Int> index of reciver
    */
   @ReactMethod
-  fun simulateEvent(eventName: String, actionName: String, value: String, promise: Promise){
-    val map: WritableMap = WritableNativeMap()
-    map.putString(actionName, value)
-    this.sendEvent(eventName, map)
+  fun sendBroadcast(actionName: String, putExtra: String, value: String, promise: Promise){
+    Intent().also { intent ->
+      intent.setAction(actionName)
+      intent.putExtra(putExtra, value)
+      this.reactApplicationContext.sendBroadcast(intent)
+    }
+    promise.resolve(true);
   }
 
   /**
