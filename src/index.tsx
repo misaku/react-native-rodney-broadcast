@@ -114,13 +114,18 @@ export function createServiceRodneyBroadcast(
     const clear = useCallback(
       async (callback?: Callback<any>): Promise<void> => {
         return new Promise((resolve) => {
-          setData(null, () => {
+          if (data) {
+            setData(null, () => {
+              if (callback) callback();
+              resolve();
+            });
+          } else {
             if (callback) callback();
             resolve();
-          });
+          }
         });
       },
-      [setData]
+      [data, setData]
     );
 
     return (
