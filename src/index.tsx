@@ -51,6 +51,7 @@ type RodneyBroadcastType = {
     putExtra: String,
     value: String
   ): Promise<void>;
+  addName(name: string): void;
 };
 
 const { RodneyBroadcast: RB } = NativeModules;

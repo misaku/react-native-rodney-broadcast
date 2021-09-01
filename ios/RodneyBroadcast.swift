@@ -1,7 +1,26 @@
 @objc(RodneyBroadcast)
-class RodneyBroadcast: RCTEventEmitter & NSObject{
+class RodneyBroadcast: RCTEventEmitter{
     var reciverList = []
+    var hasListener: Bool = false
 
+    override func startObserving() {
+        hasListener = true
+    }
+
+    override func stopObserving() {
+        hasListener = false
+    }
+
+    var listSuportedEvents:[String] = []
+
+    override func supportedEvents() -> [String]! {
+       return listSuportedEvents
+    }
+
+    @objc(addName:)
+        func addName(name:String)->Void{
+            listSuportedEvents.append(name)
+    }
     /**
 * Method used to prepare and get data to send
 * @param actionNames List<String> of names to use for get data
@@ -9,9 +28,9 @@ class RodneyBroadcast: RCTEventEmitter & NSObject{
 *
 * @returns function
 */
-    @objc func displayScanResult(actionNames: Array<String>, eventName: String) -> (NSNotification) -> Void {
+    private func displayScanResult(actionNames: Array<String>, eventName: String) -> (NSNotification) -> Void {
 
-        func notification(notification: NSNotification) -> void {
+        func notification(notification: NSNotification) -> Void {
           var message: [String: String] = [:]
 
             for actionName in actionNames {
@@ -32,10 +51,10 @@ class RodneyBroadcast: RCTEventEmitter & NSObject{
 */
     private func sendEventRodney(eventName: String, map: [String: String]) ->Void{
 
-         try{
+        do{
                self.sendEvent(withName: name, body: map)
           }catch(e){
-              println("RNRodneyBroadcast", "Exception in sendEventRodney in BroadcastReceiver is",e,separator:' ')
+            println("RNRodneyBroadcast", "Exception in sendEventRodney in BroadcastReceiver is",e,separator:" ")
           }
     }
 
@@ -47,7 +66,7 @@ class RodneyBroadcast: RCTEventEmitter & NSObject{
  *
  * @returns Promise<Bool>
  */
-    @objc
+    @objc(unregister:withResolver:withRejecter:)
     func unregister(idx: Int, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Bool {
         if (self.reciverList.size > 0) {
             let reciver = self.reciverList[idx]
@@ -66,7 +85,7 @@ class RodneyBroadcast: RCTEventEmitter & NSObject{
  *
  * @returns Promise<Int> index of reciver
  */
-    @objc
+    @objc(register:withActionNames:withEventName:withResolver:withRejecter:)
     func register(filterName: String, actionNames: String, eventName: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Int {
 
         let notificationName = Notification.Name(filterName)
@@ -87,7 +106,7 @@ class RodneyBroadcast: RCTEventEmitter & NSObject{
  *
  * @returns Promise<Bool> index of reciver
  */
-    @objc
+    @objc(sendBroadcast:withPutExtra:withValue:withResolver:withRejecter:)
     func sendBroadcast(actionName: String, putExtra: String, value: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Bool {
         var message:[String:String] = []
         message[putExtra] = value;

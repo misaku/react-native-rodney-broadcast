@@ -1,20 +1,18 @@
 #import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
 
 @interface RCT_EXTERN_MODULE(RodneyBroadcast, NSObject, RCTEventEmitter)
 
-RCT_EXTERN_METHOD(register:(String)filterName withActionNames:(String)actionNames withEventName:(String)eventName
+RCT_EXTERN_METHOD(register:(NSString)filterName withActionNames:(NSString)actionNames withEventName:(NSString)eventName
                  withResolver:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(unregister:(Int)idx withResolver:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(unregister:(int)idx withResolver:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(sendBroadcast:(String)actionName withPutExtra:(String)putExtra
+RCT_EXTERN_METHOD(sendBroadcast:(NSString)actionName withPutExtra:(NSString)putExtra
                  withValue:(String)value
                  withResolver:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(displayScanResult:(Array<String>)actionNames withEventName:(String)eventName)
-
-
+RCT_EXTERN_METHOD(addName:(NSString)name)
 @end

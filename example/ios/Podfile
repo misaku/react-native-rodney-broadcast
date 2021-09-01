@@ -9,6 +9,7 @@ def add_flipper_pods!
   pod 'FlipperKit/FlipperKitUserDefaultsPlugin', version, :configuration => 'Debug'
   pod 'FlipperKit/FlipperKitReactPlugin', version, :configuration => 'Debug'
 end
+
 # Post Install processing for Flipper
 def flipper_post_install(installer)
   installer.pods_project.targets.each do |target|
