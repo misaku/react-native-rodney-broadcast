@@ -36,26 +36,11 @@ class RodneyBroadcast: RCTEventEmitter{
             for actionName in actionNames {
                 message[actionName] = notification[actionName]
             }
-            self.sendEventRodney(eventName: eventName, map: message)
+
+            self.sendEvent(withName: eventName, body: message)
         }
 
         return notification
-    }
-
-    /**
-* Send event to device event emitter
-* @param eventName Sring of event name
-* @param map WritableMap to send
-*
-* @returns Void
-*/
-    private func sendEventRodney(eventName: String, map: [String: String]) ->Void{
-
-        do{
-               self.sendEvent(withName: name, body: map)
-          }catch(e){
-            println("RNRodneyBroadcast", "Exception in sendEventRodney in BroadcastReceiver is",e,separator:" ")
-          }
     }
 
 
@@ -67,7 +52,7 @@ class RodneyBroadcast: RCTEventEmitter{
  * @returns Promise<Bool>
  */
     @objc(unregister:withResolver:withRejecter:)
-    func unregister(idx: Int, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Bool {
+    func unregister(idx: Int, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
         if (self.reciverList.size > 0) {
             let reciver = self.reciverList[idx]
             NotificationCenter.default
@@ -86,7 +71,7 @@ class RodneyBroadcast: RCTEventEmitter{
  * @returns Promise<Int> index of reciver
  */
     @objc(register:withActionNames:withEventName:withResolver:withRejecter:)
-    func register(filterName: String, actionNames: String, eventName: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Int {
+    func register(filterName: String, actionNames: String, eventName: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
 
         let notificationName = Notification.Name(filterName)
 
@@ -107,7 +92,7 @@ class RodneyBroadcast: RCTEventEmitter{
  * @returns Promise<Bool> index of reciver
  */
     @objc(sendBroadcast:withPutExtra:withValue:withResolver:withRejecter:)
-    func sendBroadcast(actionName: String, putExtra: String, value: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Bool {
+    func sendBroadcast(actionName: String, putExtra: String, value: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
         var message:[String:String] = []
         message[putExtra] = value;
         NotificationCenter.default
