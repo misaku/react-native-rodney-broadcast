@@ -2,14 +2,12 @@ import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
 import { createServiceRodneyBroadcast } from 'react-native-rodney-broadcast';
 
-const [
-  RodneyBroadcastProvider,
-  useRodneyBroadcast,
-] = createServiceRodneyBroadcast(
-  'app.dsic.barcodetray.BARCODE_BR_DECODING_DATA',
-  ['EXTRA_BARCODE_DECODED_DATA'],
-  'RODNEY'
-);
+const [RodneyBroadcastProvider, useRodneyBroadcast] =
+  createServiceRodneyBroadcast(
+    'app.dsic.barcodetray.BARCODE_BR_DECODING_DATA',
+    ['EXTRA_BARCODE_DECODED_DATA'],
+    'RODNEY'
+  );
 
 function Home() {
   const { data, clear, sendBroadcast } = useRodneyBroadcast();
