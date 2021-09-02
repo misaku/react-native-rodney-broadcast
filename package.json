@@ -1,7 +1,7 @@
 {
   "name": "react-native-rodney-broadcast",
   "version": "0.5.1",
-  "description": "module config broadcast receiver",
+  "description": "module config broadcast notification for android and NSNotification for IOS",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
   "types": "lib/typescript/src/index.d.ts",

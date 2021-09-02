@@ -1,6 +1,6 @@
 # react-native-rodney-broadcast
 
-module config broadcast receiver
+module config broadcast notification for android and NSNotification for IOS
 
 ## Installation
 
@@ -21,14 +21,18 @@ import RodneyBroadcast from 'react-native-rodney-broadcast';
 
 // ...
 const [result, setResult] = useState()
+const eventEmitter = new NativeEventEmitter(NativeModules.RodneyBroadcast);
+
+RodneyBroadcast.addName(eventName);
+
 const registerId = await RodneyBroadcast.register('NAME OF INTENTE FILTER','NAME OF PUT EXTRA','NAME OF SERVICE');
 
- DeviceEventEmitter.addListener('NAME OF SERVICE', function (map) {
+eventEmitter.addListener('NAME OF SERVICE', function (map) {
       setResult(map.data)
  });
 
 // ...
-await RodneyBroadcast.unregister(registerId);
+await eventEmitter.unregister(registerId);
 ```
 
 ## Hooks Usage
