@@ -1,6 +1,6 @@
 # react-native-rodney-broadcast
 
-module config broadcast receiver
+module config broadcast notification for android and NSNotification for IOS
 
 ## Installation
 
