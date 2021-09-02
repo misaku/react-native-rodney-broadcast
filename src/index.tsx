@@ -1,4 +1,4 @@
-import { DeviceEventEmitter, NativeModules } from 'react-native';
+import { NativeEventEmitter, NativeModules } from 'react-native';
 import React, {
   createContext,
   SetStateAction,
@@ -51,13 +51,17 @@ type RodneyBroadcastType = {
     putExtra: String,
     value: String
   ): Promise<void>;
+  addName(name: string): void;
 };
 
 const { RodneyBroadcast: RB } = NativeModules;
 const RodneyBroadcast = RB as RodneyBroadcastType;
+
 interface RodneyBroadcastContextData {
   data: any;
+
   sendBroadcast(message: string, key: string): Promise<void>;
+
   clear(): void;
 }
 
@@ -69,6 +73,9 @@ export function createServiceRodneyBroadcast(
   const RodneyBroadcastContext = createContext<RodneyBroadcastContextData>(
     {} as RodneyBroadcastContextData
   );
+  const eventEmitter = new NativeEventEmitter(NativeModules.RodneyBroadcast);
+
+  RodneyBroadcast.addName(eventName);
   /**
    * This provider start new reciver and list event
    * @param filterName Sring name used to filter
@@ -80,6 +87,7 @@ export function createServiceRodneyBroadcast(
   const RodneyBroadcastProvider: React.FC = ({ children }) => {
     const [data, setData] = useStateCallback<any>(null as any);
     const [reciverId, setReciverId] = useState<number | undefined>(undefined);
+
     const register = useCallback(async () => {
       if (reciverId === undefined) {
         const idxRegister = await RodneyBroadcast.register(
@@ -88,7 +96,7 @@ export function createServiceRodneyBroadcast(
           eventName
         );
         setReciverId(idxRegister);
-        DeviceEventEmitter.addListener(eventName, function (map) {
+        eventEmitter.addListener(eventName, function (map) {
           setData(map);
         });
       }
@@ -97,7 +105,7 @@ export function createServiceRodneyBroadcast(
       if (reciverId !== undefined) {
         await RodneyBroadcast.unregister(reciverId);
         setReciverId(undefined);
-        DeviceEventEmitter.removeListener(eventName, function () {
+        eventEmitter.removeListener(eventName, function () {
           console.log('Remove event');
         });
       }

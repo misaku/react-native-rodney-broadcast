@@ -11,10 +11,10 @@ import com.facebook.react.bridge.JavaScriptModule
 
 class RodneyBroadcastPackage : ReactPackage {
     override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> {
-        return Arrays.asList<NativeModule>(RodneyBroadcastModule(reactContext))
+        return listOf(RodneyBroadcastModule(reactContext))
     }
 
     override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
-        return emptyList<ViewManager<*, *>>()
+        return emptyList()
     }
 }
