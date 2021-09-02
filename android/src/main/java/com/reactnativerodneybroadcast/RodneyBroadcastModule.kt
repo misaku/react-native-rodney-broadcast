@@ -16,6 +16,11 @@ class RodneyBroadcastModule(reactContext: ReactApplicationContext) : ReactContex
     return "RodneyBroadcast"
   }
 
+  @ReactMethod
+  fun addName( eventName: String) {
+
+  }
+
   /**
    * Method used to prepare and get data to send
    * @param initiatingIntent Intent

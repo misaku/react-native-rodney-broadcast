@@ -1,8 +1,9 @@
 @objc(RodneyBroadcast)
 class RodneyBroadcast: RCTEventEmitter {
-    var reciverList: [String]
-= []
+    var reciverList: [String] = []
     var hasListener: Bool = false
+    var actionNameList: [String]=[]
+    var eventName: String=""
 
     override func startObserving() {
         hasListener = true
@@ -30,19 +31,15 @@ class RodneyBroadcast: RCTEventEmitter {
 *
 * @returns function
 */
-    private func displayScanResult(actionNames: Array<String>, eventName: String) -> (NSNotification) -> Void {
+    @objc func displayScanResult(notification:NSNotification) ->  Void {
 
-        func notification(notification: NSNotification) -> Void {
             var message: [String: String] = [:]
 
-            for actionName in actionNames {
-                message[actionName] = notification[actionName]
+            for actionName in self.actionNameList {
+                message[actionName] = notification.userInfo?[actionName] as? String
             }
 
-            self.sendEvent(withName: eventName, body: message)
-        }
-
-        return notification
+            self.sendEvent(withName: self.eventName, body: message)
     }
 
 
@@ -76,8 +73,10 @@ class RodneyBroadcast: RCTEventEmitter {
     func register(filterName: String, actionNames: String, eventName: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
 
         let notificationName = Notification.Name(filterName)
+        self.actionNameList = actionNames.components(separatedBy: ";")
+        self.eventName = eventName
 
-        NotificationCenter.default.addObserver(self, selector: #selector(self.displayScanResult(actionNames: actionNames.components(separatedBy: ";"), eventName: eventName)), name: notificationName, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.displayScanResult(notification:)), name: notificationName, object: nil)
 
         self.reciverList.append(filterName)
 
