@@ -1,43 +1,6 @@
 import { NativeEventEmitter, NativeModules } from 'react-native';
-import React, {
-  createContext,
-  SetStateAction,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
-
-type Callback<T> = (value?: T) => void;
-type DispatchWithCallback<T> = (value: T, callback?: Callback<T>) => void;
-
-function useStateCallback<T>(
-  initialState: T | (() => T)
-): [T, DispatchWithCallback<SetStateAction<T>>] {
-  const [state, _setState] = useState(initialState);
-
-  const callbackRef = useRef<Callback<T>>();
-  const isFirstCallbackCall = useRef<boolean>(true);
-
-  const setState = useCallback(
-    (setStateAction: SetStateAction<T>, callback?: Callback<T>): void => {
-      callbackRef.current = callback;
-      _setState(setStateAction);
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (isFirstCallbackCall.current) {
-      isFirstCallbackCall.current = false;
-      return;
-    }
-    callbackRef.current?.(state);
-  }, [state]);
-
-  return [state, setState];
-}
+import create from 'zustand';
+import React, { useCallback, useEffect } from 'react';
 
 type RodneyBroadcastType = {
   register(
@@ -59,10 +22,51 @@ const RodneyBroadcast = RB as RodneyBroadcastType;
 
 interface RodneyBroadcastContextData {
   data: any;
+  timestamp: number;
 
   sendBroadcast(message: string, key: string): Promise<void>;
 
-  clear(): void;
+  clear(callback?: (data: any) => Promise<void>): Promise<void>;
+}
+
+interface RodneyBroadcastContextDataStore {
+  data: any;
+  setData: (
+    value: any,
+    callback?: (data: any) => Promise<void>
+  ) => Promise<void>;
+  timestamp: number;
+  setTimestamp: (
+    value: number,
+    callback?: (data: number) => Promise<void>
+  ) => Promise<void>;
+  reciverId: number | undefined;
+  setReciverId: (
+    value: number | undefined,
+    callback?: (data: number | undefined) => Promise<void>
+  ) => Promise<void>;
+
+  sendBroadcast(message: string, key: string): Promise<void>;
+
+  clear(callback?: (data: any) => Promise<void>): Promise<void>;
+}
+
+async function forceAwait<T = any>(
+  get: () => any,
+  name: string,
+  value: T,
+  callback?: (data: T) => Promise<void>
+): Promise<void> {
+  return new Promise(async (resolve) => {
+    let data: any;
+    do {
+      data = get()[name];
+    } while (data !== value);
+    if (data === value) {
+      if (callback) await callback(data);
+      resolve();
+    }
+  });
 }
 
 export function createServiceRodneyBroadcast(
@@ -70,10 +74,35 @@ export function createServiceRodneyBroadcast(
   actionNames: string[],
   eventName: string
 ): [React.FC, () => RodneyBroadcastContextData] {
-  const RodneyBroadcastContext = createContext<RodneyBroadcastContextData>(
-    {} as RodneyBroadcastContextData
-  );
   const eventEmitter = new NativeEventEmitter(NativeModules.RodneyBroadcast);
+
+  const useRodneyDataStore = create<RodneyBroadcastContextDataStore>(
+    (set, get) => ({
+      data: null,
+      reciverId: undefined,
+      timestamp: Date.now(),
+      setTimestamp: async (value, callback) => {
+        set({ timestamp: value });
+        return forceAwait(get, 'timestamp', value, callback);
+      },
+      setData: async (value, callback) => {
+        set({ data: value });
+        await get().setTimestamp(Date.now());
+        return forceAwait(get, 'data', value, callback);
+      },
+      setReciverId: async (value, callback) => {
+        set({ reciverId: value });
+        return forceAwait(get, 'reciverId', value, callback);
+      },
+      sendBroadcast: async (message: string, key: string) => {
+        await RodneyBroadcast.sendBroadcast(filterName, key, message);
+      },
+      clear: async (callback) => {
+        set({ data: null });
+        return forceAwait(get, 'data', null, callback);
+      },
+    })
+  );
 
   RodneyBroadcast.addName(eventName);
   /**
@@ -85,8 +114,9 @@ export function createServiceRodneyBroadcast(
    * @returns Promise<number>
    */
   const RodneyBroadcastProvider: React.FC = ({ children }) => {
-    const [data, setData] = useStateCallback<any>(null as any);
-    const [reciverId, setReciverId] = useState<number | undefined>(undefined);
+    const setData = useRodneyDataStore((state) => state.setData);
+    const reciverId = useRodneyDataStore((state) => state.reciverId);
+    const setReciverId = useRodneyDataStore((state) => state.setReciverId);
 
     const register = useCallback(async () => {
       if (reciverId === undefined) {
@@ -95,52 +125,31 @@ export function createServiceRodneyBroadcast(
           actionNames.join(';'),
           eventName
         );
-        setReciverId(idxRegister);
-        eventEmitter.addListener(eventName, function (map) {
+        await setReciverId(idxRegister);
+        eventEmitter.addListener(eventName, (map) => {
           setData(map);
         });
       }
-    }, [reciverId, setData]);
+    }, [reciverId, setData, setReciverId]);
+
     const unregister = useCallback(async () => {
       if (reciverId !== undefined) {
         await RodneyBroadcast.unregister(reciverId);
-        setReciverId(undefined);
+        await setReciverId(undefined);
         eventEmitter.removeListener(eventName, function () {
           console.log('Remove event');
         });
       }
-    }, [reciverId]);
+    }, [reciverId, setReciverId]);
+
     useEffect(() => {
       register();
       return () => {
         unregister();
       };
     }, [register, unregister]);
-    const sendBroadcast = useCallback(async (message: string, key: string) => {
-      await RodneyBroadcast.sendBroadcast(filterName, key, message);
-    }, []);
-    const clear = useCallback(
-      async (callback?: Callback<any>): Promise<void> => {
-        return new Promise((resolve) => {
-          if (data) {
-            setData(null, () => {
-              if (callback) callback();
-              resolve();
-            });
-          } else {
-            if (callback) callback();
-            resolve();
-          }
-        });
-      },
-      [data, setData]
-    );
 
-    return (
-      <RodneyBroadcastContext.Provider value={{ data, clear, sendBroadcast }}>
-        {children}
-      </RodneyBroadcastContext.Provider>
-    );
+    return <>{children}</>;
   };
 
   /**
@@ -148,13 +157,12 @@ export function createServiceRodneyBroadcast(
    * @returns {data: any, clear:()=>void}
    */
   function useRodneyBroadcast(): RodneyBroadcastContextData {
-    const context = useContext(RodneyBroadcastContext);
-    if (!context) {
-      throw new Error(
-        'useRodneyBroadcast must be used within a RodneyBroadcastProvider'
-      );
-    }
-    return context;
+    return {
+      data: useRodneyDataStore((state) => state.data),
+      timestamp: useRodneyDataStore((state) => state.timestamp),
+      clear: useRodneyDataStore((state) => state.clear),
+      sendBroadcast: useRodneyDataStore((state) => state.sendBroadcast),
+    };
   }
 
   return [RodneyBroadcastProvider, useRodneyBroadcast];
