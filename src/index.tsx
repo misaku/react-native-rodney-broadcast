@@ -26,47 +26,20 @@ interface RodneyBroadcastContextData {
 
   sendBroadcast(message: string, key: string): Promise<void>;
 
-  clear(callback?: (data: any) => Promise<void>): Promise<void>;
+  clear(): void;
 }
 
 interface RodneyBroadcastContextDataStore {
   data: any;
-  setData: (
-    value: any,
-    callback?: (data: any) => Promise<void>
-  ) => Promise<void>;
+  setData: (value: any) => void;
   timestamp: number;
-  setTimestamp: (
-    value: number,
-    callback?: (data: number) => Promise<void>
-  ) => Promise<void>;
+  setTimestamp: (value: number) => void;
   reciverId: number | undefined;
-  setReciverId: (
-    value: number | undefined,
-    callback?: (data: number | undefined) => Promise<void>
-  ) => Promise<void>;
+  setReciverId: (value: number | undefined) => void;
 
   sendBroadcast(message: string, key: string): Promise<void>;
 
-  clear(callback?: (data: any) => Promise<void>): Promise<void>;
-}
-
-async function forceAwait<T = any>(
-  get: () => any,
-  name: string,
-  value: T,
-  callback?: (data: T) => Promise<void>
-): Promise<void> {
-  return new Promise(async (resolve) => {
-    let data: any;
-    do {
-      data = get()[name];
-    } while (data !== value);
-    if (data === value) {
-      if (callback) await callback(data);
-      resolve();
-    }
-  });
+  clear(): void;
 }
 
 export function createServiceRodneyBroadcast(
@@ -81,25 +54,21 @@ export function createServiceRodneyBroadcast(
       data: null,
       reciverId: undefined,
       timestamp: Date.now(),
-      setTimestamp: async (value, callback) => {
+      setTimestamp: (value) => {
         set({ timestamp: value });
-        return forceAwait(get, 'timestamp', value, callback);
       },
-      setData: async (value, callback) => {
+      setData: (value) => {
         set({ data: value });
-        await get().setTimestamp(Date.now());
-        return forceAwait(get, 'data', value, callback);
+        get().setTimestamp(Date.now());
       },
-      setReciverId: async (value, callback) => {
+      setReciverId: (value) => {
         set({ reciverId: value });
-        return forceAwait(get, 'reciverId', value, callback);
       },
       sendBroadcast: async (message: string, key: string) => {
         await RodneyBroadcast.sendBroadcast(filterName, key, message);
       },
-      clear: async (callback) => {
-        set({ data: null });
-        return forceAwait(get, 'data', null, callback);
+      clear: () => {
+        get().setData(null);
       },
     })
   );

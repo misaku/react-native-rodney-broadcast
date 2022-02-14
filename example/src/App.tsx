@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { createServiceRodneyBroadcast } from 'react-native-rodney-broadcast';
 
 const [RodneyBroadcastProvider, useRodneyBroadcast] =
@@ -14,13 +14,11 @@ function Home() {
   const handleSimulation = async () => {
     await sendBroadcast('SUCCESS EVENT', 'EXTRA_BARCODE_DECODED_DATA');
   };
-  const clearData = async () => {
-    await clear(async (datax) => {
-      console.log({ data, datax });
-    });
-    console.log({ data });
-    Alert.alert('message cleared');
+
+  const clearData = () => {
+    clear();
   };
+
   return (
     <View style={styles.container}>
       <Text>{data?.EXTRA_BARCODE_DECODED_DATA || 'Aguardando Leitura'}</Text>
