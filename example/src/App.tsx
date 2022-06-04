@@ -4,9 +4,10 @@ import { createServiceRodneyBroadcast } from 'react-native-rodney-broadcast';
 
 const [RodneyBroadcastProvider, useRodneyBroadcast] =
   createServiceRodneyBroadcast(
-    'app.dsic.barcodetray.BARCODE_BR_DECODING_DATA',
+    'com.rodney.action',
     ['EXTRA_BARCODE_DECODED_DATA'],
-    'RODNEY'
+    'RODNEY',
+    'com.rodney.category'
   );
 
 function Home() {

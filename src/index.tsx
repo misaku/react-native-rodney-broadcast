@@ -6,13 +6,15 @@ type RodneyBroadcastType = {
   register(
     filterName: string,
     actionNames: string,
-    eventName: string
+    eventName: string,
+    category?: string
   ): Promise<number>;
   unregister(index: number): Promise<boolean>;
   sendBroadcast(
-    actionName: String,
-    putExtra: String,
-    value: String
+    actionName: string,
+    putExtra: string,
+    value: string,
+    category?: string
   ): Promise<void>;
   addName(name: string): void;
 };
@@ -23,9 +25,7 @@ const RodneyBroadcast = RB as RodneyBroadcastType;
 interface RodneyBroadcastContextData {
   data: any;
   timestamp: number;
-
   sendBroadcast(message: string, key: string): Promise<void>;
-
   clear(): void;
 }
 
@@ -36,16 +36,15 @@ interface RodneyBroadcastContextDataStore {
   setTimestamp: (value: number) => void;
   reciverId: number | undefined;
   setReciverId: (value: number | undefined) => void;
-
   sendBroadcast(message: string, key: string): Promise<void>;
-
   clear(): void;
 }
 
 export function createServiceRodneyBroadcast(
   filterName: string,
   actionNames: string[],
-  eventName: string
+  eventName: string,
+  category: string = ''
 ): [React.FC, () => RodneyBroadcastContextData] {
   const eventEmitter = new NativeEventEmitter(NativeModules.RodneyBroadcast);
 
@@ -65,7 +64,7 @@ export function createServiceRodneyBroadcast(
         set({ reciverId: value });
       },
       sendBroadcast: async (message: string, key: string) => {
-        await RodneyBroadcast.sendBroadcast(filterName, key, message);
+        await RodneyBroadcast.sendBroadcast(filterName, key, message, category);
       },
       clear: () => {
         get().setData(null);
@@ -92,7 +91,8 @@ export function createServiceRodneyBroadcast(
         const idxRegister = await RodneyBroadcast.register(
           filterName,
           actionNames.join(';'),
-          eventName
+          eventName,
+          category
         );
         await setReciverId(idxRegister);
         eventEmitter.addListener(eventName, (map) => {
