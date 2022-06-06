@@ -1,4 +1,4 @@
-import { NativeEventEmitter, NativeModules } from 'react-native';
+import { DeviceEventEmitter, NativeModules } from 'react-native';
 import create from 'zustand';
 import React, { useCallback, useEffect } from 'react';
 
@@ -14,7 +14,6 @@ type RodneyBroadcastType = {
     putExtra: String,
     value: String
   ): Promise<void>;
-  addName(name: string): void;
 };
 
 const { RodneyBroadcast: RB } = NativeModules;
@@ -23,9 +22,7 @@ const RodneyBroadcast = RB as RodneyBroadcastType;
 interface RodneyBroadcastContextData {
   data: any;
   timestamp: number;
-
   sendBroadcast(message: string, key: string): Promise<void>;
-
   clear(): void;
 }
 
@@ -36,9 +33,7 @@ interface RodneyBroadcastContextDataStore {
   setTimestamp: (value: number) => void;
   reciverId: number | undefined;
   setReciverId: (value: number | undefined) => void;
-
   sendBroadcast(message: string, key: string): Promise<void>;
-
   clear(): void;
 }
 
@@ -47,8 +42,6 @@ export function createServiceRodneyBroadcast(
   actionNames: string[],
   eventName: string
 ): [React.FC, () => RodneyBroadcastContextData] {
-  const eventEmitter = new NativeEventEmitter(NativeModules.RodneyBroadcast);
-
   const useRodneyDataStore = create<RodneyBroadcastContextDataStore>(
     (set, get) => ({
       data: null,
@@ -73,7 +66,6 @@ export function createServiceRodneyBroadcast(
     })
   );
 
-  RodneyBroadcast.addName(eventName);
   /**
    * This provider start new reciver and list event
    * @param filterName Sring name used to filter
@@ -94,8 +86,8 @@ export function createServiceRodneyBroadcast(
           actionNames.join(';'),
           eventName
         );
-        await setReciverId(idxRegister);
-        eventEmitter.addListener(eventName, (map) => {
+        setReciverId(idxRegister);
+        DeviceEventEmitter.addListener(eventName, (map) => {
           setData(map);
         });
       }
@@ -104,8 +96,8 @@ export function createServiceRodneyBroadcast(
     const unregister = useCallback(async () => {
       if (reciverId !== undefined) {
         await RodneyBroadcast.unregister(reciverId);
-        await setReciverId(undefined);
-        eventEmitter.removeListener(eventName, function () {
+        setReciverId(undefined);
+        DeviceEventEmitter.removeListener(eventName, function () {
           console.log('Remove event');
         });
       }
