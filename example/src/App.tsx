@@ -50,6 +50,7 @@ function Two() {
     </View>
   );
 }
+
 function One() {
   return (
     <View style={styles.container}>
@@ -58,6 +59,7 @@ function One() {
     </View>
   );
 }
+
 export default function App() {
   return (
     <RodneyBroadcastProvider>
