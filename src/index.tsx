@@ -1,19 +1,22 @@
-import { DeviceEventEmitter, NativeModules } from 'react-native';
+import { NativeEventEmitter, NativeModules } from 'react-native';
 import create from 'zustand';
 import React, { useCallback, useEffect } from 'react';
 
-type RodneyBroadcastType = {
+export type RodneyBroadcastType = {
   register(
     filterName: string,
     actionNames: string,
-    eventName: string
+    eventName: string,
+    category?: string
   ): Promise<number>;
   unregister(index: number): Promise<boolean>;
   sendBroadcast(
-    actionName: String,
-    putExtra: String,
-    value: String
+    actionName: string,
+    putExtra: string,
+    value: string,
+    category?: string
   ): Promise<void>;
+  addName(name: string): void;
 };
 
 const { RodneyBroadcast: RB } = NativeModules;
@@ -36,12 +39,23 @@ interface RodneyBroadcastContextDataStore {
   sendBroadcast(message: string, key: string): Promise<void>;
   clear(): void;
 }
-
+/**
+ * This provider start new reciver and list event
+ * @param filterName Sring name used to filter
+ * @param actionNames Sring[] names used to map data
+ * @param eventName Sring names create event
+ * @param category Sring category create event
+ *
+ * @returns Promise<number>
+ */
 export function createServiceRodneyBroadcast(
   filterName: string,
   actionNames: string[],
-  eventName: string
+  eventName: string,
+  category: string = ''
 ): [React.FC, () => RodneyBroadcastContextData] {
+  const eventEmitter = new NativeEventEmitter(NativeModules.RodneyBroadcast);
+
   const useRodneyDataStore = create<RodneyBroadcastContextDataStore>(
     (set, get) => ({
       data: null,
@@ -51,14 +65,16 @@ export function createServiceRodneyBroadcast(
         set({ timestamp: value });
       },
       setData: (value) => {
-        set({ data: value });
+        if (get().data !== value) {
+          set({ data: value });
+        }
         get().setTimestamp(Date.now());
       },
       setReciverId: (value) => {
         set({ reciverId: value });
       },
       sendBroadcast: async (message: string, key: string) => {
-        await RodneyBroadcast.sendBroadcast(filterName, key, message);
+        await RodneyBroadcast.sendBroadcast(filterName, key, message, category);
       },
       clear: () => {
         get().setData(null);
@@ -66,14 +82,6 @@ export function createServiceRodneyBroadcast(
     })
   );
 
-  /**
-   * This provider start new reciver and list event
-   * @param filterName Sring name used to filter
-   * @param actionNames Sring[] names used to map data
-   * @param eventName Sring names create event
-   *
-   * @returns Promise<number>
-   */
   const RodneyBroadcastProvider: React.FC = ({ children }) => {
     const setData = useRodneyDataStore((state) => state.setData);
     const reciverId = useRodneyDataStore((state) => state.reciverId);
@@ -84,10 +92,11 @@ export function createServiceRodneyBroadcast(
         const idxRegister = await RodneyBroadcast.register(
           filterName,
           actionNames.join(';'),
-          eventName
+          eventName,
+          category
         );
         setReciverId(idxRegister);
-        DeviceEventEmitter.addListener(eventName, (map) => {
+        eventEmitter.addListener(eventName, (map) => {
           setData(map);
         });
       }
@@ -97,7 +106,7 @@ export function createServiceRodneyBroadcast(
       if (reciverId !== undefined) {
         await RodneyBroadcast.unregister(reciverId);
         setReciverId(undefined);
-        DeviceEventEmitter.removeListener(eventName, function () {
+        eventEmitter.removeListener(eventName, function () {
           console.log('Remove event');
         });
       }

@@ -54,14 +54,19 @@ class RodneyBroadcastModule(reactContext: ReactApplicationContext) : ReactContex
    * @param filterName Sring name used to filter
    * @param actionNames Sring names used to map
    * @param eventName Sring names used to evente emitter
+   * @param category Sring names of category or void string
    *
    * @returns Promise<Int> index of reciver
    */
   @ReactMethod
-  fun register(filterName: String, actionNames: String, eventName: String, promise: Promise) {
+  fun register(filterName: String, actionNames: String, eventName: String, category:String="", promise: Promise) {
 
     val filter = IntentFilter()
     filter.addAction(filterName)
+    filter.addCategory("android.intent.category.DEFAULT")
+    if(category!==""){
+      filter.addCategory(category)
+    }
 
     val myBroadcastReceiver = object : BroadcastReceiver() {
       override fun onReceive(context: Context, intent: Intent) {
@@ -91,13 +96,18 @@ class RodneyBroadcastModule(reactContext: ReactApplicationContext) : ReactContex
    * @param actionName Sring name of broadcast intent
    * @param putExtra Sring names used to map
    * @param value Sring names used to map
+   * @param category Sring names of category or void string
    *
    * @returns Promise<Int> index of reciver
    */
   @ReactMethod
-  fun sendBroadcast(actionName: String, putExtra: String, value: String, promise: Promise){
+  fun sendBroadcast(actionName: String, putExtra: String, value: String, category:String="", promise: Promise){
     Intent().also { intent ->
       intent.setAction(actionName)
+      intent.addCategory("android.intent.category.DEFAULT")
+      if(category!==""){
+        intent.addCategory(category)
+      }
       intent.putExtra(putExtra, value)
       this.reactApplicationContext.sendBroadcast(intent)
     }
