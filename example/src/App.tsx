@@ -1,28 +1,46 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { createServiceRodneyBroadcast } from 'react-native-rodney-broadcast';
-
-const [RodneyBroadcastProvider, useRodneyBroadcast] =
-  createServiceRodneyBroadcast(
-    'com.rodney.action',
-    ['EXTRA_BARCODE_DECODED_DATA'],
-    'RODNEY',
-    'com.rodney.category'
-  );
+import {
+  useRodneyBroadcast,
+  RodneyBroadcastHookProps,
+} from 'react-native-rodney-broadcast';
+type EventProps = {
+  EXTRA_BARCODE_DECODED_DATA?: string;
+};
 
 function Home() {
-  const { data, timestamp, clear, sendBroadcast } = useRodneyBroadcast();
+  const [barcode, setBarcode] = React.useState<string | undefined>();
+  const [timestamp, setTime] = React.useState<string>(Date.now().toString());
+
+  const config: RodneyBroadcastHookProps<EventProps> = useMemo(
+    () => ({
+      filterName: 'com.rodney.action',
+      actionNames: ['EXTRA_BARCODE_DECODED_DATA'],
+      eventName: 'RODNEY',
+      category: 'com.rodney.category',
+      fn: async (data) => {
+        setBarcode(data?.EXTRA_BARCODE_DECODED_DATA);
+        setTime(Date.now().toString());
+      },
+    }),
+    []
+  );
+
+  const { sendBroadcast } = useRodneyBroadcast<EventProps>(config);
   const handleSimulation = async () => {
-    await sendBroadcast('SUCCESS EVENT', 'EXTRA_BARCODE_DECODED_DATA');
+    await sendBroadcast(
+      `SUCCESS EVENT ${Date.now()}`,
+      'EXTRA_BARCODE_DECODED_DATA'
+    );
   };
 
   const clearData = () => {
-    clear();
+    setBarcode(undefined);
   };
 
   return (
     <View style={styles.container}>
-      <Text>{data?.EXTRA_BARCODE_DECODED_DATA || 'Aguardando Leitura'}</Text>
+      <Text>{barcode || 'Aguardando Leitura'}</Text>
       <Text>{timestamp}</Text>
       <TouchableOpacity onPress={clearData}>
         <Text>CLear Data</Text>
@@ -35,10 +53,15 @@ function Home() {
 }
 
 function Three() {
+  const [mount, setMount] = useState(false);
+  const changeMount = () => setMount((prev) => !prev);
   return (
     <View style={styles.container}>
       <Text>Three---[{Date.now()}]</Text>
-      <Home />
+      {mount && <Home />}
+      <TouchableOpacity onPress={changeMount}>
+        <Text>{mount ? 'Unmount' : 'Mount'}</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -52,20 +75,12 @@ function Two() {
   );
 }
 
-function One() {
+export default function App() {
   return (
     <View style={styles.container}>
       <Text>One---[{Date.now()}]</Text>
       <Two />
     </View>
-  );
-}
-
-export default function App() {
-  return (
-    <RodneyBroadcastProvider>
-      <One />
-    </RodneyBroadcastProvider>
   );
 }
 

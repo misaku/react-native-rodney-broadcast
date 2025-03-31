@@ -2,38 +2,34 @@
 
 buildscript {
     ext {
-        buildToolsVersion = "29.0.2"
+        buildToolsVersion = "30.0.3"      // Atualize para uma versão estável mais recente
         minSdkVersion = 16
-        compileSdkVersion = 29
-        targetSdkVersion = 29
-        ndkVersion = "20.1.5948944"
+        compileSdkVersion = 30
+        targetSdkVersion = 30
+        ndkVersion = "21.1.6352462"      // Mantenha compatível com 2021
     }
     repositories {
-        google()
-        jcenter()
+        google()                         // Repositório para dependências do Android
+        mavenCentral()                   // Substituto do jcenter()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:3.5.3")
-
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+        classpath("com.android.tools.build:gradle:4.2.2") // Compatível com Gradle 6.9
     }
 }
 
 allprojects {
     repositories {
-        mavenLocal()
+        mavenLocal() // Repositórios locais
         maven {
-            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+            // Repositório local do React Native
             url("$rootDir/../node_modules/react-native/android")
         }
         maven {
-            // Android JSC is installed from npm
+            // Repositório local do JSC Android
             url("$rootDir/../node_modules/jsc-android/dist")
         }
-
-        google()
-        jcenter()
-        maven { url 'https://www.jitpack.io' }
+        google()         // Repositório oficial do Google
+        mavenCentral()   // Substituto para o jcenter() descontinuado
+        maven { url 'https://www.jitpack.io' } // Resolver bibliotecas externas como Flipper
     }
 }

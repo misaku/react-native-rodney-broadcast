@@ -36,8 +36,11 @@
     "ios",
     "android"
   ],
-  "repository": "https://github.com/misaku/react-native-rodney-broadcast",
-  "author": "Michel dos Santos Kuguio <michel.kuguio@gmail.com> (https://github.com/misaku)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/misaku/react-native-rodney-broadcast"
+  },
+  "author": "Michel dos Santos Kuguio <michel.kuguio@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/misaku/react-native-rodney-broadcast/issues"
@@ -65,7 +68,6 @@
     "prettier": "^2.0.5",
     "react": "16.13.1",
     "react-native": "0.63.4",
-    "zustand": "^3.7.0",
     "react-native-builder-bob": "^0.18.2",
     "release-it": "^15.0.0",
     "typescript": "^4.5.2"

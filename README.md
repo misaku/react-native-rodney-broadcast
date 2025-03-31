@@ -36,40 +36,43 @@ await eventEmitter.unregister(registerId);
 ```
 
 ## Hooks Usage
-```jsx
+```tsx
 
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { createServiceRodneyBroadcast } from 'react-native-rodney-broadcast';
-
-const [
-  RodneyBroadcastProvider,
+import {
   useRodneyBroadcast,
-] = createServiceRodneyBroadcast(
-  'app.dsic.barcodetray.BARCODE_BR_DECODING_DATA',
-  ['EXTRA_BARCODE_DECODED_DATA'],
-  'RODNEY'
-);
+  RodneyBroadcastHookProps,
+} from 'react-native-rodney-broadcast';
 
-function Home() {
-  const { data, clear } = useRodneyBroadcast();
+type EventProps = {
+  EXTRA_BARCODE_DECODED_DATA?: string;
+};
+
+
+export default function App() {
+  const [barcode, setBarcode] = React.useState<string | undefined>();
+
+  const config: RodneyBroadcastHookProps<EventProps> = useMemo(
+    () => ({
+      filterName: 'com.rodney.action',
+      actionNames: ['EXTRA_BARCODE_DECODED_DATA'],
+      eventName: 'RODNEY',
+      category: 'com.rodney.category',
+      fn: async (data) => {
+        setBarcode(data?.EXTRA_BARCODE_DECODED_DATA);
+        setTime(Date.now().toString());
+      },
+    }),
+    []
+  );
   return (
     <View style={styles.container}>
-      <Text>{data?.EXTRA_BARCODE_DECODED_DATA || 'Aguardando Leitura'}</Text>
-      <TouchableOpacity onPress={clear}>
-        <Text>CLear Data</Text>
-      </TouchableOpacity>
+      <Text>{barcode?.EXTRA_BARCODE_DECODED_DATA || 'Aguardando Leitura'}</Text>
     </View>
   );
 }
 
-export default function App() {
-  return (
-    <RodneyBroadcastProvider>
-      <Home />
-    </RodneyBroadcastProvider>
-  );
-}
 ```
 ## Contributing
 
