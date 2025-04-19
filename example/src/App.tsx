@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import {
-  useRodneyBroadcast,
-  RodneyBroadcastHookProps,
+  useBroadcast,
+  useBroadcastSender,
+  BroadcastHookProps,
 } from 'react-native-rodney-broadcast';
 type EventProps = {
   EXTRA_BARCODE_DECODED_DATA?: string;
@@ -12,7 +13,7 @@ function Home() {
   const [barcode, setBarcode] = React.useState<string | undefined>();
   const [timestamp, setTime] = React.useState<string>(Date.now().toString());
 
-  const config: RodneyBroadcastHookProps<EventProps> = useMemo(
+  const config: BroadcastHookProps<EventProps> = useMemo(
     () => ({
       filterName: 'com.rodney.action',
       actionNames: ['EXTRA_BARCODE_DECODED_DATA'],
@@ -26,7 +27,9 @@ function Home() {
     []
   );
 
-  const { sendBroadcast } = useRodneyBroadcast<EventProps>(config);
+  const { sendBroadcast } = useBroadcastSender(config);
+  useBroadcast(config);
+
   const handleSimulation = async () => {
     await sendBroadcast(
       `SUCCESS EVENT ${Date.now()}`,
@@ -78,6 +81,8 @@ function Two() {
 export default function App() {
   return (
     <View style={styles.container}>
+      <Text>One---[{Date.now()}]</Text>
+      <Two />
       <Text>One---[{Date.now()}]</Text>
       <Two />
     </View>
