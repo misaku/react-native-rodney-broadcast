@@ -82,7 +82,10 @@ export function useRodneyBroadcast<T extends Record<string, any>>({
 
         // Adiciona listener do EventEmitter
         const existingListeners = eventEmitter.listeners(eventName);
-        if (!existingListeners.includes(fn)) {
+        const hasListener = existingListeners.some(
+          (listener) => listener.listener === fn
+        );
+        if (!hasListener) {
           eventEmitter.addListener(eventName, fn);
         }
 
