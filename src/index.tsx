@@ -43,21 +43,30 @@ export function useRodneyBroadcast<T extends Record<string, any>>({
   filterName,
   category,
 }: RodneyBroadcastHookProps<T>): RodneyBroadcastHook {
-  const listenerRef = useRef<(() => Promise<void>) | null>(null); // Ref para armazenar o unregister
+  const listenerRef = useRef<(() => Promise<void>) | null>(null); // Ref para armazenar cleanup
+  const controllerRef = useRef<AbortController | null>(null); // AbortController para gerenciamento
 
+  // Função para enviar broadcast
   const sendBroadcast = useCallback(
     async (message: string, key: string) => {
-      await RodneyBroadcast.sendBroadcast(filterName, key, message, category);
+      try {
+        await RodneyBroadcast.sendBroadcast(filterName, key, message, category);
+      } catch (err) {
+        console.error(`[RodneyBroadcast] Erro ao enviar broadcast`, err);
+      }
     },
     [filterName, category]
   );
 
-  const addName = useCallback((name: string) => {
-    RodneyBroadcast.addName(name);
-  }, []);
+  // Função para adicionar nome
+  const addName = useCallback(
+    (name: string) => RodneyBroadcast.addName(name),
+    [] // Não depende de nada
+  );
 
   useEffect(() => {
-    let isMounted = true;
+    controllerRef.current = new AbortController(); // Abortar ações pendentes
+    const { signal } = controllerRef.current;
 
     const registerListener = async () => {
       try {
@@ -68,23 +77,33 @@ export function useRodneyBroadcast<T extends Record<string, any>>({
           category
         );
 
-        if (!isMounted) return;
+        // Verifica se foi desmontado
+        if (signal.aborted) return;
 
-        eventEmitter.addListener(eventName, fn);
+        // Adiciona listener do EventEmitter
+        const existingListeners = eventEmitter.listeners(eventName);
+        if (!existingListeners.includes(fn)) {
+          eventEmitter.addListener(eventName, fn);
+        }
 
+        // Define função de cleanup
         listenerRef.current = async () => {
           await RodneyBroadcast.unregister(idxRegister);
           eventEmitter.removeListener(eventName, fn);
         };
       } catch (error) {
-        console.error('Erro ao registrar Listener no módulo nativo:', error);
+        if (!signal.aborted) {
+          console.error('[RodneyBroadcast] Erro ao registrar Listener:', error);
+        }
       }
     };
 
+    // Registrar Listener
     registerListener();
 
     return () => {
-      isMounted = false;
+      // Realizar limpeza
+      controllerRef.current?.abort();
       if (listenerRef.current) {
         listenerRef
           .current()

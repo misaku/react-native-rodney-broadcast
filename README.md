@@ -66,6 +66,17 @@ export default function App() {
     }),
     []
   );
+  const { sendBroadcast } = useRodneyBroadcast<EventProps>(config);
+  const handleSimulation = async () => {
+    await sendBroadcast(
+      `SUCCESS EVENT ${Date.now()}`,
+      'EXTRA_BARCODE_DECODED_DATA'
+    );
+  };
+
+  const clearData = () => {
+    setBarcode(undefined);
+  };
   return (
     <View style={styles.container}>
       <Text>{barcode?.EXTRA_BARCODE_DECODED_DATA || 'Aguardando Leitura'}</Text>
