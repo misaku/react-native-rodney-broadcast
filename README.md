@@ -41,10 +41,10 @@ await eventEmitter.unregister(registerId);
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import {
-  useRodneyBroadcast,
-  RodneyBroadcastHookProps,
+  useBroadcast,
+  useBroadcastSender,
+  BroadcastHookProps,
 } from 'react-native-rodney-broadcast';
-
 type EventProps = {
   EXTRA_BARCODE_DECODED_DATA?: string;
 };
@@ -66,7 +66,9 @@ export default function App() {
     }),
     []
   );
-  const { sendBroadcast } = useRodneyBroadcast<EventProps>(config);
+  const { sendBroadcast } = useBroadcastSender(config);
+  useBroadcast(config);
+
   const handleSimulation = async () => {
     await sendBroadcast(
       `SUCCESS EVENT ${Date.now()}`,
